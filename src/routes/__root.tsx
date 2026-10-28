@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LiquidBackground } from "@/components/LiquidBackground";
+import { MobileOnly } from "@/components/MobileOnly";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -121,7 +122,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LiquidBackground />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <MobileOnly><Outlet /></MobileOnly>
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
