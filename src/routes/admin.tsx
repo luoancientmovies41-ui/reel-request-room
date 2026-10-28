@@ -75,7 +75,7 @@ function Requests() {
   const set = async (r: ReqRow, status: string) => {
     try {
       if (status === "approved") {
-        const link = (await getDoc(doc(fbDb(), "movie_links", r.movie_id))).data()?.download_url as string | undefined;
+        const link = (await getDoc(doc(fbDb(), "movie_links", r.movie_id))).data()?.["download_url"] as string | undefined;
         const fileId = link?.includes("drive.google.com") ? driveFileId(link) : null;
         if (fileId) {
           const idToken = (await fbAuth().currentUser?.getIdToken()) ?? "";

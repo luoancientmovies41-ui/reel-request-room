@@ -39,7 +39,7 @@ function Index() {
       getDocs(query(collection(db, "download_requests"), where("user_id", "==", user.uid))),
     ]);
     setMovies(m.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Movie, "id">) })));
-    setReqs(Object.fromEntries(r.docs.map((d) => [d.data().movie_id as string, d.data().status as string])));
+    setReqs(Object.fromEntries(r.docs.map((d) => [d.data()["movie_id"] as string, d.data()["status"] as string])));
   }, [user]);
 
   useEffect(() => { if (user && allowed) load().catch((e) => toast.error(e.message)); }, [user, allowed, load]);
@@ -47,7 +47,7 @@ function Index() {
   useEffect(() => {
     setLink(null);
     if (open && (reqs[open.id] === "approved" || isAdmin)) {
-      getDoc(doc(fbDb(), "movie_links", open.id)).then((s) => setLink((s.data()?.download_url as string) ?? null));
+      getDoc(doc(fbDb(), "movie_links", open.id)).then((s) => setLink((s.data()?.["download_url"] as string) ?? null));
     }
   }, [open, reqs, isAdmin]);
 
