@@ -102,7 +102,7 @@ function Index() {
       )}
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 p-3 backdrop-blur-sm animate-in fade-in sm:items-center" onClick={() => setOpen(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 p-5 backdrop-blur-sm animate-in fade-in" onClick={() => setOpen(null)}>
           <div onClick={(e) => e.stopPropagation()} className="glass-strong relative w-full max-w-sm rounded-3xl p-4 animate-in slide-in-from-bottom-10 zoom-in-95 duration-300">
             <button onClick={() => setOpen(null)} className="glass absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full" aria-label="Close"><X className="h-4 w-4" /></button>
             <div className="flex gap-4">
