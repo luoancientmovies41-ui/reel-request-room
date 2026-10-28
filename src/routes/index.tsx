@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, LogOut, Shield, X, Clock, Lock } from "lucide-react";
+import { Download, LogOut, Shield, X, Clock, Lock, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "firebase/auth";
 import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, where } from "firebase/firestore";
@@ -30,6 +30,7 @@ function Index() {
   const [reqs, setReqs] = useState<Record<string, string>>({});
   const [open, setOpen] = useState<Movie | null>(null);
   const [link, setLink] = useState<string | null>(null);
+  const [dl, setDl] = useState<{ title: string; phase: "preparing" | "done" } | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
