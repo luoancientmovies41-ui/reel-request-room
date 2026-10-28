@@ -12,9 +12,9 @@ import { shareDriveFile } from "@/lib/drive.functions";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Dashboard — Milk Cinema" },
+      { title: "Admin Dashboard — Luo Ancient Agent" },
       { name: "description", content: "Manage movies, access emails and download requests." },
-      { property: "og:title", content: "Admin Dashboard — Milk Cinema" },
+      { property: "og:title", content: "Admin Dashboard — Luo Ancient Agent" },
       { property: "og:description", content: "Manage movies, access emails and download requests." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

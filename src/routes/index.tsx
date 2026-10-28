@@ -7,13 +7,14 @@ import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, where } from 
 import { driveFileId, fbAuth, fbDb } from "@/lib/firebase";
 import { useAuth } from "@/lib/use-auth";
 import { AuthCard } from "@/components/AuthCard";
+import logo from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Milk Cinema — Movie Library" },
+      { title: "Luo Ancient Agent — Movie Library" },
       { name: "description", content: "Browse movies and request downloads in a liquid glass cinema." },
-      { property: "og:title", content: "Milk Cinema — Movie Library" },
+      { property: "og:title", content: "Luo Ancient Agent — Movie Library" },
       { property: "og:description", content: "Browse movies and request downloads in a liquid glass cinema." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,9 +61,9 @@ function Index() {
       <div className="flex min-h-screen items-center justify-center px-5">
         <div className="glass-strong max-w-sm rounded-3xl p-7 text-center">
           <Lock className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-3 text-xl font-semibold">Access pending</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{user.email} isn't on the access list yet. Ask the admin to add your email.</p>
-          <button onClick={() => signOut(fbAuth())} className="mt-5 rounded-2xl glass px-5 py-2 text-sm">Sign out</button>
+          <h1 className="mt-3 text-xl font-semibold">Email not found</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Your email ({user.email}) was not found. Please contact Luo Ancient to add your email.</p><a href="tel:0795592662" className="mt-4 inline-block rounded-2xl bg-gradient-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg">Call 0795592662</a>
+          <div><button onClick={() => signOut(fbAuth())} className="mt-3 rounded-2xl glass px-5 py-2 text-sm">Sign out</button></div>
         </div>
       </div>
     );
@@ -104,7 +105,7 @@ function Index() {
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-3 pb-16">
       <header className="glass sticky top-3 z-20 mt-3 flex items-center justify-between rounded-2xl px-4 py-3">
-        <h1 className="text-lg font-semibold">Milk<span className="text-primary">Cinema</span></h1>
+        <div className="flex items-center gap-2"><img src={logo.url} alt="Luo Ancient Agent" className="h-9 w-9 rounded-full object-contain" /><h1 className="text-base font-bold tracking-wide">LUO ANCIENT <span className="text-primary">AGENT</span></h1></div>
         <div className="flex items-center gap-2">
           {isAdmin && (
             <Link to="/admin" className="glass flex h-9 w-9 items-center justify-center rounded-xl" aria-label="Admin"><Shield className="h-4 w-4" /></Link>
