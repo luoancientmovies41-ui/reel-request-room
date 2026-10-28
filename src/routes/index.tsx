@@ -77,9 +77,23 @@ function Index() {
   };
 
   const status = open ? (isAdmin ? "approved" : reqs[open.id]) : undefined;
-  const fileId = link ? driveFileId(link) : null;
-  const isDrive = !!link && link.includes("drive.google.com") && !!fileId;
-  const downloadUrl = isDrive ? `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t` : link;
+  const startDownload = async (m: Movie) => {
+    setDl({ title: m.title, phase: "preparing" });
+    try {
+      const token = await user.getIdToken();
+      const isDrive = !!link && link.includes("drive.google.com") && !!driveFileId(link);
+      const a = document.createElement("a");
+      a.href = isDrive ? `/api/download?movie=${encodeURIComponent(m.id)}&token=${encodeURIComponent(token)}` : link!;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => setDl((d) => (d ? { ...d, phase: "done" } : d)), 2500);
+    } catch (e) {
+      setDl(null);
+      toast.error((e as Error).message);
+    }
+  };
 
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-3 pb-16">
@@ -113,23 +127,16 @@ function Index() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 p-4 backdrop-blur-sm animate-in fade-in" onClick={() => setOpen(null)}>
           <div onClick={(e) => e.stopPropagation()} className="glass-strong relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl p-4 animate-in zoom-in-95 duration-300">
             <button onClick={() => setOpen(null)} className="glass absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full" aria-label="Close"><X className="h-4 w-4" /></button>
-            {status === "approved" && isDrive ? (
-              <div className="mt-9 overflow-hidden rounded-2xl bg-foreground/10">
-                <iframe src={`https://drive.google.com/file/d/${fileId}/preview`} title={open.title} allow="autoplay; fullscreen" allowFullScreen className="aspect-video w-full" />
-              </div>
-            ) : (
-              <div className="flex gap-4">
-                <img src={open.poster_url} alt={open.title} className="aspect-[2/3] w-28 rounded-2xl object-cover shadow-lg" />
-                <div className="min-w-0 flex-1 pt-1 pr-6"><h2 className="text-lg font-semibold leading-tight">{open.title}</h2></div>
-              </div>
-            )}
-            {status === "approved" && isDrive && <h2 className="mt-3 text-base font-semibold">{open.title}</h2>}
+            <div className="flex gap-4">
+              <img src={open.poster_url} alt={open.title} className="aspect-[2/3] w-28 rounded-2xl object-cover shadow-lg" />
+              <div className="min-w-0 flex-1 pt-1 pr-6"><h2 className="text-lg font-semibold leading-tight">{open.title}</h2></div>
+            </div>
             <div className="mt-4">
               {status === "approved" ? (
-                downloadUrl ? (
-                  <a href={downloadUrl} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-success py-3 text-sm font-semibold text-primary-foreground shadow-lg">
+                link ? (
+                  <button onClick={() => startDownload(open)} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-success py-3 text-sm font-semibold text-primary-foreground shadow-lg active:scale-[0.98]">
                     <Download className="h-4 w-4" /> Download now
-                  </a>
+                  </button>
                 ) : <p className="text-center text-xs text-muted-foreground">Loading…</p>
               ) : status === "pending" ? (
                 <div className="glass flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-medium"><Clock className="h-4 w-4 text-warning" /> Waiting for admin approval</div>
@@ -141,6 +148,26 @@ function Index() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {dl && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/25 p-6 backdrop-blur-md animate-in fade-in">
+          <div className="glass-strong w-full max-w-xs rounded-3xl p-6 text-center animate-in zoom-in-95 duration-300">
+            <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${dl.phase === "done" ? "bg-success" : "bg-gradient-primary"} text-primary-foreground shadow-lg`}>
+              {dl.phase === "done" ? <Check className="h-7 w-7" /> : <Loader2 className="h-7 w-7 animate-spin" />}
+            </div>
+            <p className="mt-4 truncate text-base font-semibold">{dl.title}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {dl.phase === "done" ? "Download started — check your downloads." : "Preparing your download…"}
+            </p>
+            <div className="glass mt-4 h-1.5 overflow-hidden rounded-full">
+              <div className={`h-full bg-gradient-primary transition-all duration-[2500ms] ${dl.phase === "done" ? "w-full" : "w-2/3"}`} />
+            </div>
+            {dl.phase === "done" && (
+              <button onClick={() => setDl(null)} className="mt-5 w-full rounded-2xl glass py-2.5 text-sm font-semibold">Done</button>
+            )}
           </div>
         </div>
       )}
