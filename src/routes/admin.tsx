@@ -70,7 +70,7 @@ function Requests() {
   useEffect(() => { load(); }, [load]);
   const set = async (id: string, status: string) => {
     const { error } = await supabase.from("download_requests").update({ status }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(status === "approved" ? "Approved — user can download" : "Declined");
     load();
   };
@@ -116,10 +116,10 @@ function Movies() {
       title: f.title, poster_url: f.poster_url, genre: f.genre || null,
       year: f.year ? Number(f.year) : null, description: f.description || null,
     }).select("id").single();
-    if (error || !data) { setBusy(false); return toast.error(error?.message ?? "Failed"); }
+    if (error || !data) { setBusy(false); toast.error(error?.message ?? "Failed"); return; }
     const { error: e2 } = await supabase.from("movie_links").insert({ movie_id: data.id, download_url: f.download_url });
     setBusy(false);
-    if (e2) return toast.error(e2.message);
+    if (e2) { toast.error(e2.message); return; }
     toast.success("Movie uploaded");
     setF({ title: "", poster_url: "", download_url: "", genre: "", year: "", description: "" });
     load();
@@ -169,7 +169,7 @@ function Emails() {
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from("allowed_emails").insert({ email: email.trim().toLowerCase() });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setEmail(""); toast.success("Access granted"); load();
   };
   const remove = async (em: string) => { await supabase.from("allowed_emails").delete().eq("email", em); load(); };

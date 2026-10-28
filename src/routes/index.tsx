@@ -66,7 +66,7 @@ function Index() {
 
   const request = async (m: Movie) => {
     const { error } = await supabase.from("download_requests").insert({ movie_id: m.id, user_email: user.email! });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Request sent to admin");
     setReqs((p) => ({ ...p, [m.id]: "pending" }));
   };
