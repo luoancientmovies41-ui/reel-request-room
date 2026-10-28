@@ -11,6 +11,7 @@
 
 # Project rules
 
-- Data access goes through the browser client with RLS; download links live in a separate `movie_links` table readable only by admins or users with an approved request — keeps links hidden until approval.
-- Site access is controlled by the `allowed_emails` table via `is_allowed()`; admin role is in `user_roles` (the owner email set in the signup trigger becomes admin).
+- Auth and data use the user's Firebase project (src/lib/firebase.ts: Firebase Auth + Firestore collections movies, movie_links, download_requests, allowed_emails) — user chose Firebase over the built-in backend.
+- Admin is the single email constant ADMIN_EMAIL; site access = admin or a doc id in allowed_emails.
+- Drive sharing on approval runs in a server function that verifies the caller's Firebase ID token is the admin before using the Google Drive connector.
 - Liquid milky-glass styles are defined as utilities (`glass`, `glass-strong`, `bg-gradient-primary`) in src/styles.css; reuse them instead of ad hoc styles.
