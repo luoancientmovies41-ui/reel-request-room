@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { ADMIN_EMAIL, fbAuth, fbDb } from "@/lib/firebase";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -9,28 +10,17 @@ export function useAuth() {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    const load = async (u: User | null) => {
+    return onAuthStateChanged(fbAuth(), async (u) => {
       setUser(u);
-      if (u) {
-        const [{ data: admin }, { data: ok }] = await Promise.all([
-          supabase.rpc("has_role", { _user_id: u.id, _role: "admin" }),
-          supabase.rpc("is_allowed"),
-        ]);
-        setIsAdmin(!!admin);
-        setAllowed(!!ok);
-      } else {
-        setIsAdmin(false);
-        setAllowed(false);
-      }
+      const email = u?.email?.toLowerCase() ?? "";
+      const admin = !!u && email === ADMIN_EMAIL;
+      setIsAdmin(admin);
+      if (u && !admin) {
+        const snap = await getDoc(doc(fbDb(), "allowed_emails", email)).catch(() => null);
+        setAllowed(!!snap?.exists());
+      } else setAllowed(admin);
       setLoading(false);
-    };
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        setTimeout(() => load(session?.user ?? null), 0);
-      }
     });
-    supabase.auth.getUser().then(({ data }) => load(data.user));
-    return () => sub.subscription.unsubscribe();
   }, []);
 
   return { user, loading, isAdmin, allowed };
