@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Film } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export function AuthCard() {
   const [mode, setMode] = useState<"in" | "up">("in");
@@ -37,7 +38,19 @@ export function AuthCard() {
         <p className="mt-1 text-center text-sm text-muted-foreground">
           {mode === "in" ? "Sign in to browse the library" : "Create your account"}
         </p>
-        <div className="mt-6 space-y-3">
+        <button
+          type="button"
+          onClick={async () => {
+            const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+            if (r.error) toast.error(r.error.message ?? "Google sign-in failed");
+          }}
+          className="glass mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold transition active:scale-[0.98]"
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.3H12v4.3h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.6H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.1a11 11 0 0 0 0 9.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>
+          Continue with Google
+        </button>
+        <div className="my-4 flex items-center gap-3 text-[11px] text-muted-foreground"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div>
+        <div className="space-y-3">
           <input className="glass w-full rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className="glass w-full rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="password" placeholder="Password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>

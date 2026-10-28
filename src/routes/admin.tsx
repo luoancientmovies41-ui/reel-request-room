@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { AuthCard } from "@/components/AuthCard";
+import { useServerFn } from "@tanstack/react-start";
+import { approveRequest } from "@/lib/drive.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -68,10 +70,20 @@ function Requests() {
     setRows((data as ReqRow[]) ?? []);
   }, []);
   useEffect(() => { load(); }, [load]);
+  const approve = useServerFn(approveRequest);
   const set = async (id: string, status: string) => {
+    if (status === "approved") {
+      try {
+        const r = await approve({ data: { requestId: id } });
+        if (!r.ok) { toast.error(r.shareError ?? "Could not share Drive file"); return; }
+        toast.success(r.shared ? "Approved — Drive file shared with user" : "Approved — user can download");
+      } catch (e) { toast.error((e as Error).message); return; }
+      load();
+      return;
+    }
     const { error } = await supabase.from("download_requests").update({ status }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success(status === "approved" ? "Approved — user can download" : "Declined");
+    toast.success("Declined");
     load();
   };
   if (!rows.length) return <div className="glass rounded-2xl p-8 text-center text-sm text-muted-foreground">No requests yet.</div>;
