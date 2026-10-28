@@ -53,6 +53,11 @@ export const Route = createFileRoute("/api/download")({
         let name = "movie.mp4";
         let type = "application/octet-stream";
         let size: string | null = null;
+        // Resume support: forward the browser's Range request so interrupted downloads continue.
+        const range = request.headers.get("range");
+        const rh: Record<string, string> = range ? { Range: range } : {};
+        let status = 200;
+        let contentRange: string | null = null;
 
         // 1) Connected Drive account (files it owns or that are shared with it).
         if (lovableKey && driveKey) {
@@ -61,16 +66,18 @@ export const Route = createFileRoute("/api/download")({
           if (meta.ok) {
             const m = (await meta.json()) as { name?: string; mimeType?: string; size?: string };
             if (check) return Response.json({ ok: true });
-            const file = await fetch(`${GATEWAY_URL}/files/${fileId}?alt=media&acknowledgeAbuse=true&supportsAllDrives=true`, { headers });
+            const file = await fetch(`${GATEWAY_URL}/files/${fileId}?alt=media&acknowledgeAbuse=true&supportsAllDrives=true`, { headers: { ...headers, ...rh } });
             if (file.ok && file.body) {
-              body = file.body; name = m.name ?? name; type = m.mimeType ?? type; size = m.size ?? null;
+              body = file.body; name = m.name ?? name; type = m.mimeType ?? type;
+              status = file.status; contentRange = file.headers.get("content-range");
+              size = file.headers.get("content-length") ?? m.size ?? null;
             } else console.error(`Drive download failed [${file.status}]: ${await file.text()}`);
           } else console.error(`Drive meta failed [${meta.status}]: ${await meta.text()}`);
         }
 
         // 2) Any other Drive account: works when the file is shared "Anyone with the link".
         if (!body) {
-          const pub = await fetch(`https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`, { redirect: "follow" });
+          const pub = await fetch(`https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`, { redirect: "follow", headers: rh });
           const ct = pub.headers.get("content-type") ?? "";
           if (!pub.ok || !pub.body || ct.includes("text/html")) {
             await pub.body?.cancel();
@@ -82,6 +89,7 @@ export const Route = createFileRoute("/api/download")({
           const fn = cd.match(/filename\*=UTF-8''([^;]+)/)?.[1] ?? cd.match(/filename="([^"]+)"/)?.[1];
           if (fn) name = decodeURIComponent(fn);
           body = pub.body; type = ct || type; size = pub.headers.get("content-length");
+          status = pub.status; contentRange = pub.headers.get("content-range");
         }
 
         name = name.replace(/["\r\n]/g, "");
@@ -90,8 +98,10 @@ export const Route = createFileRoute("/api/download")({
           "Content-Disposition": `attachment; filename="${name}"; filename*=UTF-8''${encodeURIComponent(name)}`,
           "Cache-Control": "private, no-store",
         });
+        out.set("Accept-Ranges", "bytes");
         if (size) out.set("Content-Length", size);
-        return new Response(body, { headers: out });
+        if (status === 206 && contentRange) out.set("Content-Range", contentRange);
+        return new Response(body, { status: status === 206 ? 206 : 200, headers: out });
       },
     },
   },
