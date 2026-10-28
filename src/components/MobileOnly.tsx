@@ -28,7 +28,7 @@ export function MobileOnly({ children }: { children: ReactNode }) {
         <img src={logo.url} alt="Luo Ancient Agent" className="mx-auto h-28 w-28 object-contain" />
         <Smartphone className="mx-auto mt-4 h-8 w-8 text-primary" />
         <h1 className="mt-3 text-xl font-bold">Mobile only</h1>
-        <p className="mt-2 text-sm text-muted-foreground">LUO ANCIENT AGENT works only on mobile phones. Please open this website on your phone.</p>
+        <p className="mt-2 text-sm text-muted-foreground"><span className="text-brand-gradient font-bold">LUO ANCIENT AGENT</span> works only on mobile phones. Please open this website on your phone.</p>
       </div>
     </div>
   );
