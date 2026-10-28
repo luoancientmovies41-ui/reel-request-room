@@ -118,11 +118,12 @@ function Index() {
       {movies.length === 0 ? (
         <div className="glass mt-3 rounded-2xl p-8 text-center text-sm text-muted-foreground">No movies yet.</div>
       ) : (
-        <div className="mt-3 grid grid-cols-3 gap-2.5">
+        <div className="mt-3 grid grid-cols-3 gap-x-2.5 gap-y-3">
           {movies.map((m, i) => (
-            <button key={m.id} onClick={() => setOpen(m)} style={{ animationDelay: `${i * 40}ms` }} aria-label={m.title}
-              className="glass relative block overflow-hidden rounded-2xl p-0 shadow-lg ring-1 ring-border/60 transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
-              <img src={m.poster_url} alt={m.title} loading="lazy" className="block aspect-[2/3] w-full object-cover" />
+            <button key={m.id} onClick={() => setOpen(m)} style={{ animationDelay: `${i * 40}ms` }}
+              className="flex flex-col gap-1.5 transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
+              <img src={m.poster_url} alt={m.title} loading="lazy" className="block aspect-[2/3] w-full rounded-md object-cover shadow-lg ring-1 ring-border/60" />
+              <p className="line-clamp-2 px-0.5 text-[11px] font-semibold leading-tight">{m.title}</p>
             </button>
           ))}
         </div>
@@ -133,7 +134,7 @@ function Index() {
           <div onClick={(e) => e.stopPropagation()} className="glass-strong relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl p-4 animate-in zoom-in-95 duration-300">
             <button onClick={() => setOpen(null)} className="glass absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full" aria-label="Close"><X className="h-4 w-4" /></button>
             <div className="flex gap-4">
-              <img src={open.poster_url} alt={open.title} className="aspect-[2/3] w-28 rounded-2xl object-cover shadow-lg" />
+              <img src={open.poster_url} alt={open.title} className="aspect-[2/3] w-28 rounded-md object-cover shadow-lg" />
               <div className="min-w-0 flex-1 pt-1 pr-6"><h2 className="text-lg font-semibold leading-tight">{open.title}</h2></div>
             </div>
             <div className="mt-4">
