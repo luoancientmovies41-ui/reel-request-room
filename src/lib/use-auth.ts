@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { ADMIN_EMAIL, fbAuth, fbDb } from "@/lib/firebase";
 
 export function useAuth() {
@@ -10,17 +10,24 @@ export function useAuth() {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    return onAuthStateChanged(fbAuth(), async (u) => {
+    let unsubAllowed: (() => void) | null = null;
+    const unsub = onAuthStateChanged(fbAuth(), (u) => {
+      unsubAllowed?.();
+      unsubAllowed = null;
       setUser(u);
       const email = u?.email?.toLowerCase() ?? "";
       const admin = !!u && email === ADMIN_EMAIL;
       setIsAdmin(admin);
       if (u && !admin) {
-        const snap = await getDoc(doc(fbDb(), "allowed_emails", email)).catch(() => null);
-        setAllowed(!!snap?.exists());
-      } else setAllowed(admin);
-      setLoading(false);
+        // Live: access appears the moment the admin adds this email.
+        unsubAllowed = onSnapshot(
+          doc(fbDb(), "allowed_emails", email),
+          (snap) => { setAllowed(snap.exists()); setLoading(false); },
+          () => { setAllowed(false); setLoading(false); },
+        );
+      } else { setAllowed(admin); setLoading(false); }
     });
+    return () => { unsub(); unsubAllowed?.(); };
   }, []);
 
   return { user, loading, isAdmin, allowed };
