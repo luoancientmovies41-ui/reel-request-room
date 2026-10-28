@@ -89,16 +89,13 @@ function Index() {
       {movies.length === 0 ? (
         <div className="glass mt-3 rounded-2xl p-8 text-center text-sm text-muted-foreground">No movies yet.</div>
       ) : (
-        <div className="mt-3 grid grid-cols-3 gap-2.5">
+        <div className="mt-3 grid grid-cols-3 gap-2">
           {movies.map((m, i) => (
             <button key={m.id} onClick={() => setOpen(m)} style={{ animationDelay: `${i * 40}ms` }}
-              className="glass group relative overflow-hidden rounded-2xl p-1 text-left transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
-              <img src={m.poster_url} alt={m.title} loading="lazy" className="aspect-[2/3] w-full rounded-xl object-cover" />
-              <div className="px-1 py-1.5">
-                <p className="truncate text-[11px] font-semibold">{m.title}</p>
-                <p className="truncate text-[10px] text-muted-foreground">{[m.year, m.genre].filter(Boolean).join(" · ")}</p>
-              </div>
-              {reqs[m.id] === "approved" && <span className="absolute right-2 top-2 rounded-full bg-success p-1 text-primary-foreground"><Download className="h-3 w-3" /></span>}
+              className="glass group relative overflow-hidden rounded-xl p-1 text-left transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
+              <img src={m.poster_url} alt={m.title} loading="lazy" className="aspect-[2/3] w-full rounded-lg object-cover" />
+              <p className="truncate px-0.5 pb-1 pt-1.5 text-[10px] font-semibold leading-snug">{m.title}</p>
+              {reqs[m.id] === "approved" && <span className="absolute right-1.5 top-1.5 rounded-full bg-success p-1 text-primary-foreground"><Download className="h-2.5 w-2.5" /></span>}
             </button>
           ))}
         </div>
@@ -112,7 +109,7 @@ function Index() {
               <img src={open.poster_url} alt={open.title} className="aspect-[2/3] w-28 rounded-2xl object-cover shadow-lg" />
               <div className="min-w-0 flex-1 pt-1 pr-6">
                 <h2 className="text-lg font-semibold leading-tight">{open.title}</h2>
-                <p className="mt-1 text-xs text-muted-foreground">{[open.year, open.genre].filter(Boolean).join(" · ")}</p>
+                {(open.year || open.genre) && <p className="mt-1 text-xs text-muted-foreground">{[open.year, open.genre].filter(Boolean).join(" · ")}</p>}
                 {open.description && <p className="mt-2 line-clamp-5 text-xs text-muted-foreground">{open.description}</p>}
               </div>
             </div>
