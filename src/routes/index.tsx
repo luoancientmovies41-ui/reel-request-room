@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, LogOut, Shield, X, Clock, Lock, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, where } from "firebase/firestore";
 import { driveFileId, fbAuth, fbDb } from "@/lib/firebase";
 import { useAuth } from "@/lib/use-auth";
 import { AuthCard } from "@/components/AuthCard";
@@ -45,6 +45,23 @@ function Index() {
   }, [user]);
 
   useEffect(() => { if (user && allowed) load().catch((e) => toast.error(e.message)); }, [user, allowed, load]);
+
+  // Live updates: approvals and new movies appear without refreshing.
+  useEffect(() => {
+    if (!user || !allowed) return;
+    const db = fbDb();
+    const u1 = onSnapshot(query(collection(db, "download_requests"), where("user_id", "==", user.uid)), (r) => {
+      setReqs((prev) => {
+        const next = Object.fromEntries(r.docs.map((d) => [d.data()["movie_id"] as string, d.data()["status"] as string]));
+        for (const [k, v] of Object.entries(next)) if (v === "approved" && prev[k] && prev[k] !== "approved") toast.success("Your download was approved!");
+        return next;
+      });
+    }, () => {});
+    const u2 = onSnapshot(query(collection(db, "movies"), orderBy("created_at", "desc")), (m) => {
+      setMovies(m.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Movie, "id">) })));
+    }, () => {});
+    return () => { u1(); u2(); };
+  }, [user, allowed]);
 
   useEffect(() => {
     setLink(null);
@@ -104,7 +121,7 @@ function Index() {
 
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-3 pb-16">
-      <header className="glass sticky top-3 z-20 mt-3 flex items-center justify-between rounded-2xl px-4 py-3">
+      <header className="glass relative z-20 mt-3 flex items-center justify-between rounded-2xl px-4 py-3">
         <div className="flex items-center gap-2"><img src={logo.url} alt="Luo Ancient Agent" className="h-9 w-9 rounded-full object-contain" /><h1 className="text-base font-bold tracking-wide">LUO ANCIENT <span className="text-primary">AGENT</span></h1></div>
         <div className="flex items-center gap-2">
           {isAdmin && (
