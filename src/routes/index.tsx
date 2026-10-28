@@ -118,13 +118,11 @@ function Index() {
       {movies.length === 0 ? (
         <div className="glass mt-3 rounded-2xl p-8 text-center text-sm text-muted-foreground">No movies yet.</div>
       ) : (
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-2.5">
           {movies.map((m, i) => (
-            <button key={m.id} onClick={() => setOpen(m)} style={{ animationDelay: `${i * 40}ms` }}
-              className="glass group relative overflow-hidden rounded-xl p-1 text-left transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
-              <img src={m.poster_url} alt={m.title} loading="lazy" className="aspect-[2/3] w-full rounded-lg object-cover" />
-              <p className="truncate px-0.5 pb-1 pt-1.5 text-[10px] font-semibold leading-snug">{m.title}</p>
-              {reqs[m.id] === "approved" && <span className="absolute right-1.5 top-1.5 rounded-full bg-success p-1 text-primary-foreground"><Download className="h-2.5 w-2.5" /></span>}
+            <button key={m.id} onClick={() => setOpen(m)} style={{ animationDelay: `${i * 40}ms` }} aria-label={m.title}
+              className="glass relative block overflow-hidden rounded-2xl p-0 shadow-lg ring-1 ring-border/60 transition active:scale-95 animate-in fade-in slide-in-from-bottom-2 fill-mode-both">
+              <img src={m.poster_url} alt={m.title} loading="lazy" className="block aspect-[2/3] w-full object-cover" />
             </button>
           ))}
         </div>
