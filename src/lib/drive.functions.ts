@@ -5,7 +5,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_drive/drive/v3
 
 function extractFileId(url: string): string | null {
   const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : null;
+  return m?.[1] ?? null;
 }
 
 export const approveRequest = createServerFn({ method: "POST" })
@@ -32,8 +32,8 @@ export const approveRequest = createServerFn({ method: "POST" })
     const fileId = link?.download_url ? extractFileId(link.download_url) : null;
 
     if (fileId && link?.download_url.includes("drive.google.com")) {
-      const lovableKey = process.env.LOVABLE_API_KEY;
-      const driveKey = process.env.GOOGLE_DRIVE_API_KEY;
+      const lovableKey = process.env["LOVABLE_API_KEY"];
+      const driveKey = process.env["GOOGLE_DRIVE_API_KEY"];
       if (!lovableKey || !driveKey) throw new Error("Google Drive is not connected");
       const res = await fetch(`${GATEWAY_URL}/files/${fileId}/permissions?sendNotificationEmail=false&supportsAllDrives=true`, {
         method: "POST",
