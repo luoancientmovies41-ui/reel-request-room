@@ -122,7 +122,7 @@ function Index() {
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-3 pb-16">
       <header className="glass relative z-20 mt-3 flex items-center justify-between rounded-2xl px-4 py-3">
-        <div className="flex items-center gap-2"><img src={logo.url} alt="Luo Ancient Agent" className="h-9 w-9 rounded-full object-contain" /><h1 className="text-base font-bold tracking-wide">LUO ANCIENT <span className="text-primary">AGENT</span></h1></div>
+        <div className="flex items-center gap-2"><img src={logo.url} alt="Luo Ancient Agent" className="h-9 w-9 rounded-full object-contain" /><h1 className="text-brand-gradient text-base font-extrabold tracking-wide">LUO ANCIENT AGENT</h1></div>
         <div className="flex items-center gap-2">
           {isAdmin && (
             <Link to="/admin" className="glass flex h-9 w-9 items-center justify-center rounded-xl" aria-label="Admin"><Shield className="h-4 w-4" /></Link>

@@ -43,7 +43,7 @@ export function AuthCard() {
         <div className="hidden">
           <Film className="h-7 w-7" />
         </div>
-        <h1 className="text-center text-2xl font-bold tracking-wide">LUO ANCIENT AGENT</h1>
+        <h1 className="text-center text-brand-gradient text-2xl font-extrabold tracking-wide">LUO ANCIENT AGENT</h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
           {mode === "in" ? "Sign in to browse the library" : "Create your account"}
         </p>
