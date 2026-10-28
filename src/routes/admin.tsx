@@ -101,7 +101,7 @@ type MovieRow = { id: string; title: string; poster_url: string };
 
 function Movies() {
   const [list, setList] = useState<MovieRow[]>([]);
-  const [f, setF] = useState({ title: "", poster_url: "", download_url: "", genre: "", year: "", description: "" });
+  const [f, setF] = useState({ title: "", poster_url: "", download_url: "" });
   const [busy, setBusy] = useState(false);
   const load = useCallback(async () => {
     const { data } = await supabase.from("movies").select("id,title,poster_url").order("created_at", { ascending: false });
@@ -113,15 +113,14 @@ function Movies() {
     e.preventDefault();
     setBusy(true);
     const { data, error } = await supabase.from("movies").insert({
-      title: f.title, poster_url: f.poster_url, genre: f.genre || null,
-      year: f.year ? Number(f.year) : null, description: f.description || null,
+      title: f.title, poster_url: f.poster_url,
     }).select("id").single();
     if (error || !data) { setBusy(false); toast.error(error?.message ?? "Failed"); return; }
     const { error: e2 } = await supabase.from("movie_links").insert({ movie_id: data.id, download_url: f.download_url });
     setBusy(false);
     if (e2) { toast.error(e2.message); return; }
     toast.success("Movie uploaded");
-    setF({ title: "", poster_url: "", download_url: "", genre: "", year: "", description: "" });
+    setF({ title: "", poster_url: "", download_url: "" });
     load();
   };
   const del = async (id: string) => {
@@ -138,19 +137,14 @@ function Movies() {
         <input className={field} placeholder="Title" required value={f.title} onChange={up("title")} />
         <input className={field} type="url" placeholder="Poster image link" required value={f.poster_url} onChange={up("poster_url")} />
         <input className={field} type="url" placeholder="Download link" required value={f.download_url} onChange={up("download_url")} />
-        <div className="grid grid-cols-2 gap-3">
-          <input className={field} placeholder="Genre" value={f.genre} onChange={up("genre")} />
-          <input className={field} type="number" placeholder="Year" value={f.year} onChange={up("year")} />
-        </div>
-        <textarea className={field} rows={3} placeholder="Description" value={f.description} onChange={up("description")} />
         <button disabled={busy} className={primaryBtn}>{busy ? "Uploading…" : "Upload movie"}</button>
       </form>
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-3 gap-2">
         {list.map((m) => (
-          <div key={m.id} className="glass relative rounded-2xl p-1">
-            <img src={m.poster_url} alt={m.title} className="aspect-[2/3] w-full rounded-xl object-cover" />
-            <p className="truncate px-1 py-1 text-[11px] font-semibold">{m.title}</p>
-            <button onClick={() => del(m.id)} className="glass-strong absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-destructive" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+          <div key={m.id} className="glass relative overflow-hidden rounded-xl p-1">
+            <img src={m.poster_url} alt={m.title} className="aspect-[2/3] w-full rounded-lg object-cover" />
+            <p className="truncate px-0.5 pb-1 pt-1.5 text-[10px] font-semibold leading-snug">{m.title}</p>
+            <button onClick={() => del(m.id)} className="glass-strong absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full text-destructive" aria-label="Delete"><Trash2 className="h-3 w-3" /></button>
           </div>
         ))}
       </div>
