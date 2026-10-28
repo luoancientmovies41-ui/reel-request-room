@@ -8,6 +8,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { fbAuth } from "@/lib/firebase";
+import logo from "@/assets/logo.png.asset.json";
 
 export function AuthCard() {
   const [mode, setMode] = useState<"in" | "up">("in");
@@ -38,10 +39,11 @@ export function AuthCard() {
   return (
     <div className="flex min-h-screen items-center justify-center px-5">
       <form onSubmit={submit} className="glass-strong w-full max-w-sm rounded-3xl p-7 animate-in fade-in zoom-in-95 duration-500">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-lg">
+        <img src={logo.url} alt="Luo Ancient Agent" className="mx-auto mb-4 h-28 w-28 object-contain drop-shadow-lg" />
+        <div className="hidden">
           <Film className="h-7 w-7" />
         </div>
-        <h1 className="text-center text-2xl font-semibold">Milk Cinema</h1>
+        <h1 className="text-center text-2xl font-bold tracking-wide">LUO ANCIENT AGENT</h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
           {mode === "in" ? "Sign in to browse the library" : "Create your account"}
         </p>
