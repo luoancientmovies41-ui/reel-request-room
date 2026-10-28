@@ -45,32 +45,53 @@ export const Route = createFileRoute("/api/download")({
         const fileId = link ? fileIdFrom(link) : null;
         if (!fileId) return new Response("No file", { status: 404 });
 
+        const check = url.searchParams.get("check") === "1";
         const lovableKey = process.env["LOVABLE_API_KEY"];
         const driveKey = process.env["GOOGLE_DRIVE_API_KEY"];
-        if (!lovableKey || !driveKey) return new Response("Drive not connected", { status: 500 });
-        const headers = { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": driveKey };
 
-        const meta = await fetch(`${GATEWAY_URL}/files/${fileId}?fields=name,mimeType,size&supportsAllDrives=true`, { headers });
-        if (!meta.ok) {
-          const body = await meta.text();
-          console.error(`Drive meta failed [${meta.status}]: ${body}`);
-          return new Response(`Drive error (${meta.status})`, { status: 502 });
+        let body: ReadableStream | null = null;
+        let name = "movie.mp4";
+        let type = "application/octet-stream";
+        let size: string | null = null;
+
+        // 1) Connected Drive account (files it owns or that are shared with it).
+        if (lovableKey && driveKey) {
+          const headers = { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": driveKey };
+          const meta = await fetch(`${GATEWAY_URL}/files/${fileId}?fields=name,mimeType,size&supportsAllDrives=true`, { headers });
+          if (meta.ok) {
+            const m = (await meta.json()) as { name?: string; mimeType?: string; size?: string };
+            if (check) return Response.json({ ok: true });
+            const file = await fetch(`${GATEWAY_URL}/files/${fileId}?alt=media&acknowledgeAbuse=true&supportsAllDrives=true`, { headers });
+            if (file.ok && file.body) {
+              body = file.body; name = m.name ?? name; type = m.mimeType ?? type; size = m.size ?? null;
+            } else console.error(`Drive download failed [${file.status}]: ${await file.text()}`);
+          } else console.error(`Drive meta failed [${meta.status}]: ${await meta.text()}`);
         }
-        const m = (await meta.json()) as { name?: string; mimeType?: string; size?: string };
-        const file = await fetch(`${GATEWAY_URL}/files/${fileId}?alt=media&acknowledgeAbuse=true&supportsAllDrives=true`, { headers });
-        if (!file.ok || !file.body) {
-          const body = await file.text();
-          console.error(`Drive download failed [${file.status}]: ${body}`);
-          return new Response(`Drive error (${file.status})`, { status: 502 });
+
+        // 2) Any other Drive account: works when the file is shared "Anyone with the link".
+        if (!body) {
+          const pub = await fetch(`https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`, { redirect: "follow" });
+          const ct = pub.headers.get("content-type") ?? "";
+          if (!pub.ok || !pub.body || ct.includes("text/html")) {
+            await pub.body?.cancel();
+            const msg = "This video's Drive file isn't public. In Google Drive set sharing to “Anyone with the link”.";
+            return check ? Response.json({ ok: false, error: msg }) : new Response(msg, { status: 403 });
+          }
+          if (check) { await pub.body.cancel(); return Response.json({ ok: true }); }
+          const cd = pub.headers.get("content-disposition") ?? "";
+          const fn = cd.match(/filename\*=UTF-8''([^;]+)/)?.[1] ?? cd.match(/filename="([^"]+)"/)?.[1];
+          if (fn) name = decodeURIComponent(fn);
+          body = pub.body; type = ct || type; size = pub.headers.get("content-length");
         }
-        const name = (m.name ?? "movie.mp4").replace(/["\r\n]/g, "");
+
+        name = name.replace(/["\r\n]/g, "");
         const out = new Headers({
-          "Content-Type": m.mimeType ?? "application/octet-stream",
+          "Content-Type": type,
           "Content-Disposition": `attachment; filename="${name}"; filename*=UTF-8''${encodeURIComponent(name)}`,
           "Cache-Control": "private, no-store",
         });
-        if (m.size) out.set("Content-Length", m.size);
-        return new Response(file.body, { headers: out });
+        if (size) out.set("Content-Length", size);
+        return new Response(body, { headers: out });
       },
     },
   },

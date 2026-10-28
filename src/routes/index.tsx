@@ -83,8 +83,13 @@ function Index() {
     try {
       const token = await user.getIdToken();
       const isDrive = !!link && link.includes("drive.google.com") && !!driveFileId(link);
+      const api = `/api/download?movie=${encodeURIComponent(m.id)}&token=${encodeURIComponent(token)}`;
+      if (isDrive) {
+        const c = (await (await fetch(`${api}&check=1`)).json().catch(() => ({ ok: false, error: "Download failed" }))) as { ok: boolean; error?: string };
+        if (!c.ok) throw new Error(c.error ?? "Download failed");
+      }
       const a = document.createElement("a");
-      a.href = isDrive ? `/api/download?movie=${encodeURIComponent(m.id)}&token=${encodeURIComponent(token)}` : link!;
+      a.href = isDrive ? api : link!;
       a.download = "";
       document.body.appendChild(a);
       a.click();
